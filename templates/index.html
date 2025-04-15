@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>在庫一覧</title>
+</head>
+<body>
+    <h1>商品一覧</h1>
+    <a href="/add">＋商品を追加</a>
+    <ul>
+        {% for item in items %}
+            <li>{{ item.name }}（{{ item.stock }} {{ item.unit }}）</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
