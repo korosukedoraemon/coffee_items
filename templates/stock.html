@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block title %}在庫一覧{% endblock %}
+
+{% block content %}
+
+<!-- タイトル部分を分離して装飾できるように -->
+<div class="page-title">
+    <h1>📦 在庫一覧</h1>
+    <p class="subtitle">Stock Management</p>
+</div>
+
+<table>
+    <tr>
+        <th>商品名</th>
+        <th>カテゴリ</th>
+        <th>在庫</th>
+        <th>単位</th>
+        <th>警告</th>
+        <th>操作</th>
+    </tr>
+    {% for item in items %}
+    <tr>
+        <td>{{ item.name }}</td>
+        <td>{{ item.category or '（未分類）' }}</td>
+        <td>{{ item.stock }}</td>
+        <td>{{ item.unit }}</td>
+        <td>
+            {% if item.stock <= item.min_stock %}
+                <span class="badge badge-danger">⚠ 残りわずか</span>
+            {% else %}
+                <span class="badge badge-safe">OK</span>
+            {% endif %}
+        </td>
+        
+        <td class="action-links">
+            <a href="{{ url_for('edit_item', item_id=item.id) }}" class="edit-link">編集</a>
+            ・
+            <a href="{{ url_for('delete_item', item_id=item.id) }}" class="delete-link" onclick="return confirm('本当に削除しますか？')">削除</a>
+        </td>
+        
+    </tr>
+    {% endfor %}
+</table>
+
+{% endblock %}

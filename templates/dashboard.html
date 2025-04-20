@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block title %}ダッシュボード{% endblock %}
+
+{% block content %}
+<div class="dashboard">
+    <h1 class="dashboard-title"><span class="icon">📊</span> ダッシュボード - 利用状況の概要</h1>
+    <hr class="section-divider">
+    <!-- 今月の使用量 -->
+    <section class="dashboard-section">
+        <h2>今月の使用量</h2>
+        <ul>
+            {% for item in usage_summary %}
+            <li>{{ item.name }}: {{ item.total_quantity }} {{ item.unit }}</li>
+            {% endfor %}
+        </ul>
+    </section>
+
+    <!-- 在庫切れ間近リスト -->
+    <section class="dashboard-section">
+        <h2>在庫切れ間近アイテム</h2>
+        {% if low_stock_items %}
+            <ul>
+                {% for item in low_stock_items %}
+                <li><span class="low-stock">⚠ {{ item.name }} （現在: {{ item.stock }} {{ item.unit }}）</span></li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>全てOKです。</p>
+        {% endif %}
+    </section>
+
+    <!-- よく使うメニューへのリンク -->
+    <section class="dashboard-section">
+        <h2>メニュー</h2>
+        <div class="menu-links">
+            <a href="{{ url_for('stock') }}" class="btn">在庫一覧</a>
+            <a href="{{ url_for('history') }}" class="btn">履歴</a>
+            <a href="{{ url_for('summary') }}" class="btn">月別まとめ</a>
+            <a href="{{ url_for('add_item') }}" class="btn">商品追加</a>
+        </div>
+    </section>
+</div>
+{% endblock %}

@@ -1,0 +1,307 @@
+body {
+    font-family: sans-serif;
+}
+table {
+    border-collapse: separate;
+    border-spacing: 0;
+    width: 90%;
+    margin: 20px auto;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+th {
+    background-color: #f3e5ab;
+    color: #4e342e;
+    font-weight: bold;
+    text-align: center;
+    padding: 12px;
+}
+
+td {
+    text-align: center;
+    padding: 10px;
+    border-bottom: 1px solid #e0d7cd;
+}
+
+tr:hover td {
+    background-color: #fdf6ee;
+    transition: background-color 0.3s ease;
+}
+
+
+/* 全体のフォントと背景色 */
+body {
+    font-family: 'Noto Sans JP', sans-serif;
+    background-color: #fdfaf6; /* ミルクティー風の優しい色 */
+    margin: 0;
+    padding: 0;
+}
+
+/* ログインボックスを中央に配置 */
+.login-container {
+    max-width: 400px;
+    margin: 100px auto;
+    padding: 30px;
+    background-color: #ffffff;
+    border: 1px solid #ddd;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* タイトル */
+.login-container h1 {
+    text-align: center;
+    margin-bottom: 25px;
+    color: #4e342e; /* コーヒー系の濃いブラウン */
+}
+
+/* フォーム入力欄 */
+.login-container input[type="text"],
+.login-container input[type="password"] {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    margin-bottom: 20px;
+}
+
+/* ログインボタン */
+.login-container button {
+    width: 100%;
+    background-color: #795548;
+    color: white;
+    padding: 10px;
+    border: none;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.login-container button:hover {
+    background-color: #5d4037;
+}
+
+/* エラーメッセージ用アラート */
+.alert-error {
+    background-color: #ffe0e0;
+    border: 1px solid #ff9999;
+    color: #b71c1c;
+    padding: 10px;
+    border-radius: 6px;
+    margin-bottom: 20px;
+    font-size: 0.9em;
+}
+
+.page-title {
+    text-align: center;
+    margin-top: 40px;
+    margin-bottom: 20px;
+}
+
+.page-title h1 {
+    font-size: 2.2em;
+    color: #5d4037; /* 濃いブラウン */
+    margin: 0;
+    font-weight: bold;
+}
+
+.page-title .subtitle {
+    font-size: 1em;
+    font-style: italic;
+    color: #8d6e63; /* やさしいミルクティーブラウン */
+    margin-top: 6px;
+}
+
+.badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.85em;
+    font-weight: bold;
+    line-height: 1;
+}
+
+.badge-danger {
+    background-color: #fdecea; /* 優しい赤ベージュ */
+    color: #b71c1c;             /* 落ち着いた赤茶 */
+    border: 1px solid #f8c7c7;  /* ふちも柔らかめに */
+}
+
+.badge-safe {
+    background-color: #c8e6c9; /* 薄ミントグリーン */
+    color: #2e7d32; /* 落ち着いた緑 */
+}
+
+/* 操作リンク全体 */
+.action-links a {
+    text-decoration: none;
+    margin: 0 6px;
+    font-weight: bold;
+    display: inline-block;
+}
+
+/* 編集リンク：ボタン風 */
+.edit-link {
+    color: #1976d2;
+    border: 1px solid #1976d2;
+    border-radius: 5px;
+    padding: 4px 10px;
+    background-color: transparent;
+    transition: background-color 0.2s;
+}
+
+.edit-link:hover {
+    background-color: #e3f2fd;
+}
+
+/* 削除リンク：ズレない＋やさしいホバー */
+.delete-link {
+    color: #c62828;
+    background-color: transparent;
+    border-radius: 5px;
+    padding: 4px 10px;
+    transition: background-color 0.2s;
+}
+
+.delete-link:hover {
+    background-color: #fdecea;
+}
+
+.card {
+    background-color: #fff;
+    border-radius: 12px;
+    padding: 20px;
+    margin: 20px auto;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    width: 90%;
+    max-width: 800px;
+  }
+  
+  .badge-highlight {
+    background-color: #ffe6e6;
+    color: #c0392b;
+    font-weight: bold;
+    padding: 3px 8px;
+    border-radius: 8px;
+  }
+  
+  .menu-links {
+    text-align: center;
+    margin-top: 20px;
+  }
+  
+  .menu-links a.btn {
+    display: inline-block;
+    margin: 8px;
+    padding: 10px 16px;
+    background-color: #A0522D;
+    color: #fff;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: 0.2s;
+  }
+  
+  .menu-links a.btn:hover {
+    background-color: #8B4513;
+  }
+  
+  .dashboard-title {
+    margin-bottom: 1.5rem;  /* ゆるやかな余白 */
+    border-bottom: 2px solid #ddd;  /* 薄めの線も入れると見やすい */
+    padding-bottom: 0.5rem;
+}
+
+.section-divider {
+    border: none;
+    border-top: 2px solid #ddd;
+    margin: 1rem 0;
+}
+body {
+    font-family: 'Noto Sans JP', 'Yu Gothic UI', 'Hiragino Kaku Gothic ProN', sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    color: #333;
+}
+
+/* 見出しにアクセントフォント */
+h1, h2, h3 {
+    font-family: 'Noto Serif JP', 'Merriweather', serif;
+    font-weight: 700;
+    color: #3f2d22;
+}
+
+.back-link {
+    margin-top: 30px;
+    text-align: center;
+  }
+  .back-link a {
+    color: #6b4f3f;
+    text-decoration: none;
+    font-weight: bold;
+  }
+  .back-link a:hover {
+    text-decoration: underline;
+  }
+  
+  .flash-messages {
+    margin: 1.5rem auto;
+    width: 90%;
+    max-width: 600px;
+    text-align: center;
+  }
+  
+  .flash {
+    background-color: #f0f9eb;
+    color: #2e7d32;
+    border: 1px solid #a5d6a7;
+    border-radius: 8px;
+    padding: 12px 20px;
+    margin-bottom: 10px;
+    font-weight: bold;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  }
+  
+  .input-field {
+    width: 300px;
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    box-shadow: 1px 1px 3px rgba(0,0,0,0.05);
+    font-size: 16px;
+    background-color: #fffdf9;
+  }
+  
+  .btn-add {
+    background-color: #9c6644;
+    color: white;
+    padding: 8px 20px;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  
+  .btn-add:hover {
+    background-color: #7a4d30;
+  }
+  
+  .form-wrapper {
+    display: flex;
+    justify-content: center;
+    margin-top: 40px;
+  }
+  
+  form {
+    width: 320px;
+  }
+  
+  .form-title {
+    text-align: center;
+    font-family: "Noto Serif JP", serif;
+    margin-top: 40px;
+  }
+  

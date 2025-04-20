@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block title %}使用記録{% endblock %}
+
+{% block content %}
+<h1>商品使用の記録</h1>
+
+<form method="POST">
+    <label>商品：</label><br>
+    <select name="item_id" required>
+        {% for item in items %}
+            <option value="{{ item.id }}">{{ item.name }}</option>
+        {% endfor %}
+    </select><br><br>
+
+    <label>使用日：</label><br>
+    <input type="date" name="usage_date" required><br><br>
+
+    <label>使用量：</label><br>
+    <input type="number" name="quantity" required><br><br>
+
+    <label>使用メモ（任意）：</label><br>
+    <input type="text" name="usage_note"><br><br>
+
+    <button type="submit">記録</button>
+</form>
+{% endblock %}

@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}仕入れ登録{% endblock %}
+
+{% block content %}
+<h1>仕入れ記録の追加</h1>
+
+<form method="POST">
+    <label>商品：</label><br>
+    <select name="item_id" required>
+        {% for item in items %}
+            <option value="{{ item.id }}">{{ item.name }}</option>
+        {% endfor %}
+    </select><br><br>
+
+    <label>仕入れ日：</label><br>
+    <input type="date" name="purchase_date" required><br><br>
+
+    <label>数量：</label><br>
+    <input type="number" name="quantity" required><br><br>
+
+    <label>単価（任意）：</label><br>
+    <input type="number" step="0.01" name="unit_price"><br><br>
+
+    <label>仕入れ先（任意）：</label><br>
+    <input type="text" name="supplier"><br><br>
+
+    <button type="submit">登録</button>
+</form>
+{% endblock %}

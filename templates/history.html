@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}履歴一覧{% endblock %}
+
+{% block content %}
+<h1 style="text-align: center;">履歴検索</h1>
+
+<form method="get" style="text-align: center; margin-bottom: 20px;">
+    <input type="text" name="keyword" placeholder="商品名で検索" value="{{ keyword }}">
+    <input type="date" name="date" value="{{ date_filter }}">
+    <button type="submit">検索</button>
+    <a href="{{ url_for('history') }}" style="margin-left: 10px;">リセット</a>
+</form>
+
+<div style="display: flex; justify-content: space-around;">
+    <div>
+        <h2 style="text-align: center;">仕入れ履歴（Purchases）</h2>
+        <table style="border-collapse: collapse; width: 100%; margin-bottom: 20px;">
+            <tr>
+                <th>日付</th>
+                <th>商品</th>
+                <th>数量</th>
+                <th>単価</th>
+                <th>仕入れ先</th>
+            </tr>
+            {% for p in purchases %}
+            <tr>
+                <td>{{ p.purchase_date }}</td>
+                <td>{{ p.item_name }}</td>
+                <td>{{ p.quantity }}</td>
+                <td>{{ p.unit_price or '-' }}</td>
+                <td>{{ p.supplier or '-' }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+
+    <div>
+        <h2 style="text-align: center;">使用履歴（Usages）</h2>
+        <table style="border-collapse: collapse; width: 100%;">
+            <tr>
+                <th>日付</th>
+                <th>商品</th>
+                <th>数量</th>
+                <th>用途</th>
+            </tr>
+            {% for u in usages %}
+            <tr>
+                <td>{{ u.usage_date }}</td>
+                <td>{{ u.item_name }}</td>
+                <td>{{ u.quantity }}</td>
+                <td>{{ u.usage_note or '-' }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+</div>
+{% endblock %}

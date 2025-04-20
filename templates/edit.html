@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block title %}商品編集{% endblock %}
+
+{% block content %}
+<h1>商品を編集</h1>
+
+<form method="POST">
+    <label>商品名：</label><br>
+    <input type="text" name="name" value="{{ item.name }}" required><br><br>
+
+    <label>カテゴリ：</label><br>
+    <input type="text" name="category" value="{{ item.category }}"><br><br>
+
+    <label>単位：</label><br>
+    <input type="text" name="unit" value="{{ item.unit }}" required><br><br>
+
+    <label>在庫数：</label><br>
+    <input type="number" name="stock" value="{{ item.stock }}" required><br><br>
+
+    <label>最小在庫数：</label><br>
+    <input type="number" name="min_stock" value="{{ item.min_stock }}" required><br><br>
+
+    <button type="submit">保存</button>
+    <a href="{{ url_for('stock') }}">戻る</a>
+</form>
+{% endblock %}
