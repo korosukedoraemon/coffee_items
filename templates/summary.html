@@ -3,24 +3,33 @@
 {% block title %}月別まとめ{% endblock %}
 
 {% block content %}
-<h1 style="text-align:center;">月別まとめ</h1>
+<h2 class="page-title">月別まとめ</h2>
 
-<table>
-    <tr>
-        <th>月</th>
-        <th>仕入れ合計</th>
-        <th>使用合計</th>
-    </tr>
-    {% for month, data in summary %}
-    <tr>
-        <td>{{ month }}</td>
-        <td>{{ data.purchase }}</td>
-        <td>{{ data.usage }}</td>
-    </tr>
-    {% endfor %}
-</table>
+{% for month, items in summary.items() %}
+<details class="summary-block">
+  <summary class="summary-header">{{ month }}</summary>
+  <div class="summary-content">
+    <table class="summary-table">
+      <thead>
+        <tr>
+          <th>商品名</th>
+          <th>仕入れ量</th>
+          <th>使用量</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in items %}
+        <tr>
+          <td>{{ item.name }}</td>
+          <td>{{ item.purchase_qty }}</td>
+          <td>{{ item.usage_qty }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</details>
+{% endfor %}
 
-<div style="text-align:center; margin-top: 20px;">
-    <a href="{{ url_for('stock') }}">← 在庫一覧に戻る</a>
-</div>
+<p><a href="{{ url_for('stock') }}">← 在庫一覧に戻る</a></p>
 {% endblock %}

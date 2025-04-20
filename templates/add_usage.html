@@ -3,25 +3,37 @@
 {% block title %}使用記録{% endblock %}
 
 {% block content %}
-<h1>商品使用の記録</h1>
 
-<form method="POST">
-    <label>商品：</label><br>
-    <select name="item_id" required>
+<h2 class="page-title">商品使用の記録</h2>
+
+<div class="form-wrapper">
+  <form method="POST">
+    <div class="form-group">
+      <label for="item_id">商品：</label>
+      <select name="item_id" id="item_id" required>
         {% for item in items %}
-            <option value="{{ item.id }}">{{ item.name }}</option>
+          <option value="{{ item.id }}">{{ item.name }}</option>
         {% endfor %}
-    </select><br><br>
+      </select>
+    </div>
 
-    <label>使用日：</label><br>
-    <input type="date" name="usage_date" required><br><br>
+    <div class="form-group">
+      <label for="usage_date">使用日：</label>
+      <input type="date" name="usage_date" id="usage_date" required>
+    </div>
 
-    <label>使用量：</label><br>
-    <input type="number" name="quantity" required><br><br>
+    <div class="form-group">
+      <label for="quantity">使用量：</label>
+      <input type="number" name="quantity" id="quantity" required>
+    </div>
 
-    <label>使用メモ（任意）：</label><br>
-    <input type="text" name="usage_note"><br><br>
+    <div class="form-group">
+      <label for="usage_note">使用メモ（任意）：</label>
+      <input type="text" name="usage_note" id="usage_note">
+    </div>
 
     <button type="submit">記録</button>
-</form>
+  </form>
+</div>
+
 {% endblock %}

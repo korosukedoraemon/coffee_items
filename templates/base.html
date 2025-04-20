@@ -35,11 +35,11 @@
     {% if session.get('user_id') %}
     <nav>
         <a href="{{ url_for('stock') }}">在庫一覧</a>
+        <a href="{{ url_for('add_purchase') }}">仕入れ追加</a>
+        <a href="{{ url_for('add_usage') }}">使用追加</a>
         <a href="{{ url_for('history') }}">履歴</a>
         <a href="{{ url_for('summary') }}">月別まとめ</a>
         <a href="{{ url_for('add_item') }}">商品追加</a>
-        <a href="{{ url_for('add_purchase') }}">仕入れ追加</a>
-        <a href="{{ url_for('add_usage') }}">使用追加</a>
         <a href="{{ url_for('logout') }}">ログアウト</a>
     </nav>
     {% with messages = get_flashed_messages() %}

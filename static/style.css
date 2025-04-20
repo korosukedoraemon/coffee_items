@@ -112,7 +112,7 @@ body {
     font-size: 1em;
     font-style: italic;
     color: #8d6e63; /* やさしいミルクティーブラウン */
-    margin-top: 6px;
+    margin-top: 0px;
 }
 
 .badge {
@@ -170,6 +170,61 @@ body {
     background-color: #fdecea;
 }
 
+.form-wrapper {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 2rem;
+    background-color: #fffdf8;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  }
+  
+  .form-wrapper h2 {
+    text-align: center;
+    margin-bottom: 1.5rem;
+    font-family: 'Noto Serif JP', serif;
+    font-size: 1.8rem;
+    color: #3b2f2f;
+  }
+  
+  .form-group {
+    margin-bottom: 1.2rem;
+  }
+  
+  label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: bold;
+    color: #4a3e3e;
+  }
+  
+  input[type="text"],
+  input[type="number"],
+  input[type="date"],
+  select {
+    width: 100%;
+    padding: 0.6rem;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 1rem;
+  }
+  
+  button, input[type="submit"] {
+    background-color: #9c6644;
+    color: #fff;
+    border: none;
+    padding: 0.6rem 1.2rem;
+    border-radius: 8px;
+    font-size: 1rem;
+    cursor: pointer;
+    display: block;
+    margin: 1.5rem auto 0;
+  }
+  
+  button:hover, input[type="submit"]:hover {
+    background-color: #7f4b2a;
+  }
+  
 .card {
     background-color: #fff;
     border-radius: 12px;
@@ -303,5 +358,46 @@ h1, h2, h3 {
     text-align: center;
     font-family: "Noto Serif JP", serif;
     margin-top: 40px;
+  }
+  
+  .page-title {
+    text-align: center;
+    margin-top: 2rem;
+    margin-bottom: 1.5rem;
+    font-size: 2rem;
+    font-family: 'Noto Serif JP', serif;
+    color: #3b2f2f;
+  }
+  
+  details.summary-block {
+    background-color: #fdfcf9;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    margin: 1em 0;
+    padding: 0.5em 1em;
+  }
+  
+  summary.summary-header {
+    font-weight: bold;
+    font-size: 1.2em;
+    cursor: pointer;
+    margin-bottom: 0.5em;
+  }
+  
+  .summary-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 0.5em;
+  }
+  
+  .summary-table th,
+  .summary-table td {
+    border: 1px solid #ccc;
+    padding: 0.5em;
+    text-align: center;
+  }
+  
+  .summary-table th {
+    background-color: #f7e8a0;
   }
   

@@ -195,62 +195,7 @@ def delete_item(item_id):
     conn.close()
     return redirect(url_for('stock'))
 
-
-@app.route('/summary')
-@login_required
-def summary():
-    conn = get_db_connection()
-
-    purchase_summary = conn.execute('''
-        SELECT strftime('%Y-%m', purchase_date) AS month, SUM(quantity) AS total
-        FROM purchases
-        GROUP BY month
-        ORDER BY month DESC
-    ''').fetchall()
-
-    usage_summary = conn.execute('''
-        SELECT strftime('%Y-%m', usage_date) AS month, SUM(quantity) AS total
-        FROM usages
-        GROUP BY month
-        ORDER BY month DESC
-    ''').fetchall()
-
-    conn.close()
-
-    # 月ごとに両方を統合（dictベース）
-    summary = {}
-    for row in purchase_summary:
-        summary[row['month']] = {'purchase': row['total'], 'usage': 0}
-
-    for row in usage_summary:
-        month = row['month']
-        if month in summary:
-            summary[month]['usage'] = row['total']
-        else:
-            summary[month] = {'purchase': 0, 'usage': row['total']}
-
-    # 月で並び替え
-    sorted_summary = sorted(summary.items(), reverse=True)
-
-    return render_template('summary.html', summary=sorted_summary)
-
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    conn = get_db_connection()
-    error = None
-
-    if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
-        user = conn.execute('SELECT * FROM users WHERE username = ?', (username,)).fetchone()
-
-        if user and check_password_hash(user['password'], password):
-            session['user_id'] = user['id']
-            return redirect(url_for('stock'))
-        else:
-            error = 'ログイン失敗：ユーザー名またはパスワードが違います'
-
-    return render_template('login.html', error=error)
+    from collections import defaultdict, OrderedDict
 
 @app.route('/logout')
 def logout():
@@ -279,6 +224,72 @@ def dashboard():
     return render_template('dashboard.html',
                            total_usage=total_usage,
                            low_stock_items=low_stock_items)
+
+@app.route('/summary')
+@login_required
+def summary():
+    from collections import defaultdict, OrderedDict
+
+    conn = get_db_connection()
+
+    purchase_summary = conn.execute('''
+        SELECT strftime('%Y-%m', purchase_date) AS month,
+               i.name AS item_name,
+               SUM(quantity) AS total
+        FROM purchases p
+        JOIN items i ON p.item_id = i.id
+        GROUP BY month, item_name
+    ''').fetchall()
+
+    usage_summary = conn.execute('''
+        SELECT strftime('%Y-%m', usage_date) AS month,
+               i.name AS item_name,
+               SUM(quantity) AS total
+        FROM usages u
+        JOIN items i ON u.item_id = i.id
+        GROUP BY month, item_name
+    ''').fetchall()
+
+    conn.close()
+
+    temp = defaultdict(lambda: defaultdict(lambda: {'purchase_qty': 0, 'usage_qty': 0}))
+    for row in purchase_summary:
+        temp[row['month']][row['item_name']]['purchase_qty'] = row['total']
+    for row in usage_summary:
+        temp[row['month']][row['item_name']]['usage_qty'] = row['total']
+
+    summary = OrderedDict()
+    for month in sorted(temp.keys(), reverse=True):
+        summary[month] = []
+        for item_name, qty in temp[month].items():
+            summary[month].append({
+                'name': item_name,
+                'purchase_qty': qty['purchase_qty'],
+                'usage_qty': qty['usage_qty']
+            })
+
+    return render_template('summary.html', summary=summary)
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():  # ← 関数名を login_page にして重複防止！
+    conn = get_db_connection()
+    error = None
+
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+
+        user = conn.execute('SELECT * FROM users WHERE username = ?', (username,)).fetchone()
+
+        if user and check_password_hash(user['password'], password):
+            session['user_id'] = user['id']
+            flash('✅ ログインしました')
+            return redirect(url_for('dashboard'))
+        else:
+            error = 'ログイン失敗：ユーザー名またはパスワードが違います'
+
+    conn.close()
+    return render_template('login.html', error=error)
 
 if __name__ == '__main__':
     print("Flaskアプリを起動します")
