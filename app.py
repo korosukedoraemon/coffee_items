@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, redirect, session, url_for, flash
 from datetime import datetime
-import sqlite3
+import psycopg2
 from werkzeug.security import check_password_hash
 
 app = Flask(__name__)
@@ -16,8 +16,7 @@ def login_required(f):
     return wrapped
 
 def get_db_connection():
-    conn = sqlite3.connect('inventory.db')
-    conn.row_factory = sqlite3.Row
+    conn = psycopg2.connect(os.environ['DATABASE_URL'])
     return conn
 
 @app.route('/')
