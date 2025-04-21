@@ -5,11 +5,10 @@ import os
 from werkzeug.security import check_password_hash
 from dotenv import load_dotenv
 
-app = Flask(__name__)
-app.secret_key = 'my-super-secret-123'
 
 load_dotenv()  # ← .env ファイルを読み込む
 
+app = Flask(__name__)
 # Flask設定に使う
 app.secret_key = os.getenv('SECRET_KEY')
 
@@ -254,10 +253,13 @@ def logout():
     session.pop('user_id', None)
     return redirect(url_for('login'))
 
+from psycopg2.extras import RealDictCursor
+
 @app.route('/dashboard')
+@login_required
 def dashboard():
     conn = get_db_connection()
-    cur = conn.cursor()  # ← カーソルを取得
+    cur = conn.cursor(cursor_factory=RealDictCursor)
     current_month = datetime.now().strftime('%Y-%m')
 
     # 今月の使用量を合計
@@ -266,20 +268,21 @@ def dashboard():
         FROM usages
         WHERE usage_date LIKE %s
     '''
-    cur.execute(usage_query, (f'{current_month}%',))  # ← curで実行し、? → %s に変更
+    cur.execute(usage_query, (f'{current_month}%',))
     usage_result = cur.fetchone()
-    total_usage = usage_result[0] or 0  # ← psycopg2は dict じゃなく tuple で返す
+    total_usage = usage_result['total_usage'] or 0  # dict形式で取得！
 
     # 在庫切れ間近（min_stock以下）の商品
-    cur.execute('SELECT * FROM items WHERE stock <= min_stock')  # ← conn ではなく cur
-    low_stock_items = cur.fetchall()
+    cur.execute('SELECT * FROM items WHERE stock <= min_stock')
+    low_stock_items = cur.fetchall()  # これも list of dict になる！
 
-    cur.close()  # ← カーソルを明示的にクローズ
+    cur.close()
     conn.close()
 
     return render_template('dashboard.html',
                            total_usage=total_usage,
                            low_stock_items=low_stock_items)
+
 
 @app.route('/summary')
 @login_required
