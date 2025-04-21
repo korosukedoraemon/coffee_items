@@ -3,9 +3,18 @@ from datetime import datetime
 import psycopg2
 import os
 from werkzeug.security import check_password_hash
+from dotenv import load_dotenv
 
 app = Flask(__name__)
 app.secret_key = 'my-super-secret-123'
+
+load_dotenv()  # ← .env ファイルを読み込む
+
+# Flask設定に使う
+app.secret_key = os.getenv('SECRET_KEY')
+
+# DB接続用
+DATABASE_URL = os.getenv('DATABASE_URL')
 
 def login_required(f):
     from functools import wraps
@@ -32,20 +41,27 @@ def add_item():
         unit = request.form['unit']
         stock = int(request.form['stock'])
 
-        # データベースに追加処理
+        # PostgreSQL用の書き方に修正
         conn = get_db_connection()
-        conn.execute('INSERT INTO items (name, unit, stock) VALUES (?, ?, ?)', (name, unit, stock))
+        cur = conn.cursor()
+        cur.execute(
+            'INSERT INTO items (name, unit, stock) VALUES (%s, %s, %s)',
+            (name, unit, stock)
+        )
         conn.commit()
+        cur.close()
         conn.close()
 
         flash(f'✅ 商品「{name}」を追加しました。')
-        return redirect(url_for('stock'))  # 遷移先でメッセージ表示される
+        return redirect(url_for('stock'))
+
     return render_template('add_item.html')
 
 @app.route('/add_usage', methods=['GET', 'POST'])
 @login_required
 def add_usage():
     conn = get_db_connection()
+    cur = conn.cursor()
 
     if request.method == 'POST':
         item_id = request.form['item_id']
@@ -54,46 +70,50 @@ def add_usage():
         usage_note = request.form['usage_note']
 
         # 現在の在庫数を取得
-        current_stock = conn.execute(
-            'SELECT stock FROM items WHERE id = ?', (item_id,)
-        ).fetchone()['stock']
+        cur.execute('SELECT stock FROM items WHERE id = %s', (item_id,))
+        current_stock = cur.fetchone()[0]
 
-        # 在庫不足の場合は警告を出して入力ページへ戻す
+        # 在庫不足チェック
         if quantity > current_stock:
-            items = conn.execute('SELECT * FROM items').fetchall()
+            cur.execute('SELECT * FROM items')
+            items = cur.fetchall()
+            cur.close()
             conn.close()
             flash(f'⚠️ 在庫不足です（現在の在庫: {current_stock}）', 'error')
             return render_template('add_usage.html', items=items)
 
         # 使用情報を追加
-        conn.execute('''
+        cur.execute('''
             INSERT INTO usages (item_id, usage_date, quantity, usage_note)
-            VALUES (?, ?, ?, ?)
+            VALUES (%s, %s, %s, %s)
         ''', (item_id, usage_date, quantity, usage_note))
 
         # 在庫を減らす
-        conn.execute('''
-            UPDATE items SET stock = stock - ?
-            WHERE id = ?
+        cur.execute('''
+            UPDATE items SET stock = stock - %s
+            WHERE id = %s
         ''', (quantity, item_id))
 
         conn.commit()
+        cur.close()
         conn.close()
 
         flash('✅ 使用情報を追加しました。')
         return redirect(url_for('stock'))
 
     # GET時：商品一覧を表示
-    items = conn.execute('SELECT * FROM items').fetchall()
+    cur.execute('SELECT * FROM items')
+    items = cur.fetchall()
+    cur.close()
     conn.close()
     return render_template('add_usage.html', items=items)
-
 
 
 @app.route('/add_purchase', methods=['GET', 'POST'])
 @login_required
 def add_purchase():
     conn = get_db_connection()
+    cur = conn.cursor()
 
     if request.method == 'POST':
         item_id = request.form['item_id']
@@ -103,43 +123,48 @@ def add_purchase():
         supplier = request.form['supplier']
 
         # purchases に追加
-        conn.execute('''
+        cur.execute('''
             INSERT INTO purchases (item_id, purchase_date, quantity, unit_price, supplier)
-            VALUES (?, ?, ?, ?, ?)
+            VALUES (%s, %s, %s, %s, %s)
         ''', (item_id, purchase_date, quantity, unit_price, supplier))
 
         # 在庫を更新
-        conn.execute('''
-            UPDATE items SET stock = stock + ?
-            WHERE id = ?
+        cur.execute('''
+            UPDATE items SET stock = stock + %s
+            WHERE id = %s
         ''', (quantity, item_id))
 
         conn.commit()
+        cur.close()
         conn.close()
 
-        # フィードバック
         flash('✅ 仕入れを追加しました。')
         return redirect(url_for('stock'))
 
     # GETメソッドの場合
-    items = conn.execute('SELECT * FROM items').fetchall()
+    cur.execute('SELECT * FROM items')
+    items = cur.fetchall()
+    cur.close()
     conn.close()
     return render_template('add_purchase.html', items=items)
-
 
 @app.route('/stock')
 @login_required
 def stock():
     conn = get_db_connection()
-    items = conn.execute('SELECT * FROM items').fetchall()
+    cur = conn.cursor()
+    cur.execute('SELECT * FROM items')
+    items = cur.fetchall()
+    cur.close()
     conn.close()
     return render_template('stock.html', items=items)
 
 
-@app.route('/history', methods=['GET', 'POST'])
+@@app.route('/history', methods=['GET', 'POST'])
 @login_required
 def history():
     conn = get_db_connection()
+    cur = conn.cursor()
 
     keyword = request.args.get('keyword', '').strip()
     date_filter = request.args.get('date', '').strip()
@@ -148,30 +173,37 @@ def history():
         SELECT p.id, p.purchase_date, i.name AS item_name, p.quantity, p.unit_price, p.supplier
         FROM purchases p
         JOIN items i ON p.item_id = i.id
-        WHERE i.name LIKE ? AND p.purchase_date LIKE ?
+        WHERE i.name LIKE %s AND p.purchase_date LIKE %s
         ORDER BY p.purchase_date DESC
     '''
     usage_query = '''
         SELECT u.id, u.usage_date, i.name AS item_name, u.quantity, u.usage_note
         FROM usages u
         JOIN items i ON u.item_id = i.id
-        WHERE i.name LIKE ? AND u.usage_date LIKE ?
+        WHERE i.name LIKE %s AND u.usage_date LIKE %s
         ORDER BY u.usage_date DESC
     '''
 
     like_keyword = f'%{keyword}%'
     like_date = f'%{date_filter}%'
 
-    purchases = conn.execute(purchase_query, (like_keyword, like_date)).fetchall()
-    usages = conn.execute(usage_query, (like_keyword, like_date)).fetchall()
+    cur.execute(purchase_query, (like_keyword, like_date))
+    purchases = cur.fetchall()
 
+    cur.execute(usage_query, (like_keyword, like_date))
+    usages = cur.fetchall()
+
+    cur.close()
     conn.close()
+
     return render_template('history.html', purchases=purchases, usages=usages,
                            keyword=keyword, date_filter=date_filter)
+
 @app.route('/edit/<int:item_id>', methods=['GET', 'POST'])
 @login_required
 def edit_item(item_id):
     conn = get_db_connection()
+    cur = conn.cursor()
 
     if request.method == 'POST':
         name = request.form['name']
@@ -180,33 +212,42 @@ def edit_item(item_id):
         stock = int(request.form['stock'])
         min_stock = int(request.form['min_stock'])
 
-        conn.execute('''
+        cur.execute('''
             UPDATE items
-            SET name = ?, category = ?, unit = ?, stock = ?, min_stock = ?
-            WHERE id = ?
+            SET name = %s, category = %s, unit = %s, stock = %s, min_stock = %s
+            WHERE id = %s
         ''', (name, category, unit, stock, min_stock, item_id))
 
         conn.commit()
+        cur.close()
         conn.close()
         return redirect('/stock')
 
-    item = conn.execute('SELECT * FROM items WHERE id = ?', (item_id,)).fetchone()
+    cur.execute('SELECT * FROM items WHERE id = %s', (item_id,))
+    item = cur.fetchone()
+
+    cur.close()
     conn.close()
     return render_template('edit_item.html', item=item)
 
 @app.route('/delete/<int:item_id>')
+@login_required
 def delete_item(item_id):
     conn = get_db_connection()
-    cur = conn.execute('SELECT name FROM items WHERE id = ?', (item_id,))
+    cur = conn.cursor()
+
+    cur.execute('SELECT name FROM items WHERE id = %s', (item_id,))
     item = cur.fetchone()
+
     if item:
-        flash(f'🗑️ 商品「{item["name"]}」を削除しました。')
-        conn.execute('DELETE FROM items WHERE id = ?', (item_id,))
+        flash(f'🗑️ 商品「{item[0]}」を削除しました。')  # ← psycopg2は tuple で返るので item["name"] → item[0]
+        cur.execute('DELETE FROM items WHERE id = %s', (item_id,))
         conn.commit()
+
+    cur.close()
     conn.close()
     return redirect(url_for('stock'))
 
-    from collections import defaultdict, OrderedDict
 
 @app.route('/logout')
 def logout():
@@ -216,20 +257,24 @@ def logout():
 @app.route('/dashboard')
 def dashboard():
     conn = get_db_connection()
+    cur = conn.cursor()  # ← カーソルを取得
     current_month = datetime.now().strftime('%Y-%m')
 
     # 今月の使用量を合計
     usage_query = '''
         SELECT SUM(quantity) as total_usage
         FROM usages
-        WHERE usage_date LIKE ?
+        WHERE usage_date LIKE %s
     '''
-    usage_result = conn.execute(usage_query, (f'{current_month}%',)).fetchone()
-    total_usage = usage_result['total_usage'] or 0
+    cur.execute(usage_query, (f'{current_month}%',))  # ← curで実行し、? → %s に変更
+    usage_result = cur.fetchone()
+    total_usage = usage_result[0] or 0  # ← psycopg2は dict じゃなく tuple で返す
 
     # 在庫切れ間近（min_stock以下）の商品
-    low_stock_items = conn.execute('SELECT * FROM items WHERE stock <= min_stock').fetchall()
+    cur.execute('SELECT * FROM items WHERE stock <= min_stock')  # ← conn ではなく cur
+    low_stock_items = cur.fetchall()
 
+    cur.close()  # ← カーソルを明示的にクローズ
     conn.close()
 
     return render_template('dashboard.html',
@@ -242,32 +287,38 @@ def summary():
     from collections import defaultdict, OrderedDict
 
     conn = get_db_connection()
+    cur = conn.cursor()
 
-    purchase_summary = conn.execute('''
-        SELECT strftime('%Y-%m', purchase_date) AS month,
+    # PostgreSQLでは strftime → TO_CHAR
+    cur.execute('''
+        SELECT TO_CHAR(purchase_date, 'YYYY-MM') AS month,
                i.name AS item_name,
                SUM(quantity) AS total
         FROM purchases p
         JOIN items i ON p.item_id = i.id
         GROUP BY month, item_name
-    ''').fetchall()
+    ''')
+    purchase_summary = cur.fetchall()
 
-    usage_summary = conn.execute('''
-        SELECT strftime('%Y-%m', usage_date) AS month,
+    cur.execute('''
+        SELECT TO_CHAR(usage_date, 'YYYY-MM') AS month,
                i.name AS item_name,
                SUM(quantity) AS total
         FROM usages u
         JOIN items i ON u.item_id = i.id
         GROUP BY month, item_name
-    ''').fetchall()
+    ''')
+    usage_summary = cur.fetchall()
 
+    cur.close()
     conn.close()
 
+    # データ整形
     temp = defaultdict(lambda: defaultdict(lambda: {'purchase_qty': 0, 'usage_qty': 0}))
     for row in purchase_summary:
-        temp[row['month']][row['item_name']]['purchase_qty'] = row['total']
+        temp[row[0]][row[1]]['purchase_qty'] = row[2]
     for row in usage_summary:
-        temp[row['month']][row['item_name']]['usage_qty'] = row['total']
+        temp[row[0]][row[1]]['usage_qty'] = row[2]
 
     summary = OrderedDict()
     for month in sorted(temp.keys(), reverse=True):
@@ -282,27 +333,32 @@ def summary():
     return render_template('summary.html', summary=summary)
 
 @app.route('/login', methods=['GET', 'POST'])
-def login():  # ← 関数名を login_page にして重複防止！
+def login():
     conn = get_db_connection()
+    cur = conn.cursor()
     error = None
 
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
 
-        user = conn.execute('SELECT * FROM users WHERE username = ?', (username,)).fetchone()
+        cur.execute('SELECT * FROM users WHERE username = %s', (username,))
+        user = cur.fetchone()
 
-        if user and check_password_hash(user['password'], password):
-            session['user_id'] = user['id']
+        if user and check_password_hash(user[2], password):  # user[2] は password（列の順に注意）
+            session['user_id'] = user[0]  # user[0] は id
             flash('✅ ログインしました')
+            cur.close()
+            conn.close()
             return redirect(url_for('dashboard'))
         else:
             error = 'ログイン失敗：ユーザー名またはパスワードが違います'
 
+    cur.close()
     conn.close()
     return render_template('login.html', error=error)
 
 if __name__ == '__main__':
-    print("Flaskアプリを起動します")
-    app.run(debug=True)
+    app.run()
+
 
