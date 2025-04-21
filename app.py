@@ -6,16 +6,6 @@ from werkzeug.security import check_password_hash
 app = Flask(__name__)
 app.secret_key = 'my-super-secret-123'
 
-def get_db_connection():
-    conn = sqlite3.connect('inventory.db')
-    conn.row_factory = sqlite3.Row
-    return conn
-
-@app.route('/')
-def index():
-    return redirect('/dashboard')
-
-
 def login_required(f):
     from functools import wraps
     @wraps(f)
@@ -24,6 +14,15 @@ def login_required(f):
             return redirect(url_for('login'))
         return f(*args, **kwargs)
     return wrapped
+
+def get_db_connection():
+    conn = sqlite3.connect('inventory.db')
+    conn.row_factory = sqlite3.Row
+    return conn
+
+@app.route('/')
+def index():
+    return redirect('/dashboard')
 
 @app.route('/add', methods=['GET', 'POST'])
 @login_required
@@ -170,6 +169,7 @@ def history():
     return render_template('history.html', purchases=purchases, usages=usages,
                            keyword=keyword, date_filter=date_filter)
 @app.route('/edit/<int:item_id>', methods=['GET', 'POST'])
+@login_required
 def edit_item(item_id):
     conn = get_db_connection()
 
