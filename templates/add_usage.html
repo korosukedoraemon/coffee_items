@@ -6,6 +6,17 @@
 
 <h2 class="page-title">商品使用の記録</h2>
 
+<!-- フラッシュメッセージ表示 -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <ul class="flashes">
+      {% for category, message in messages %}
+        <li class="{{ category }}">{{ message }}</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+{% endwith %}
+
 <div class="form-wrapper">
   <form method="POST">
     <div class="form-group">

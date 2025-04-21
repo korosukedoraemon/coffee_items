@@ -401,3 +401,27 @@ h1, h2, h3 {
     background-color: #f7e8a0;
   }
   
+  .flashes {
+    list-style: none;
+    padding: 0;
+    margin-bottom: 20px;
+  }
+  
+  .flashes li {
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 10px;
+  }
+  
+  .flashes li.error {
+    background-color: #ffe0e0;
+    color: #a00;
+    border: 1px solid #a00;
+  }
+  
+  .flashes li.success {
+    background-color: #e0ffe0;
+    color: #0a0;
+    border: 1px solid #0a0;
+  }
+  

@@ -13,10 +13,8 @@ def get_db_connection():
 
 @app.route('/')
 def index():
-    conn = get_db_connection()
-    items = conn.execute('SELECT * FROM items').fetchall()
-    conn.close()
-    return render_template('index.html', items=items)
+    return redirect('/dashboard')
+
 
 def login_required(f):
     from functools import wraps
@@ -55,13 +53,25 @@ def add_usage():
         quantity = int(request.form['quantity'])
         usage_note = request.form['usage_note']
 
-        # usages テーブルに追加
+        # 現在の在庫数を取得
+        current_stock = conn.execute(
+            'SELECT stock FROM items WHERE id = ?', (item_id,)
+        ).fetchone()['stock']
+
+        # 在庫不足の場合は警告を出して入力ページへ戻す
+        if quantity > current_stock:
+            items = conn.execute('SELECT * FROM items').fetchall()
+            conn.close()
+            flash(f'⚠️ 在庫不足です（現在の在庫: {current_stock}）', 'error')
+            return render_template('add_usage.html', items=items)
+
+        # 使用情報を追加
         conn.execute('''
             INSERT INTO usages (item_id, usage_date, quantity, usage_note)
             VALUES (?, ?, ?, ?)
         ''', (item_id, usage_date, quantity, usage_note))
 
-        # items テーブルの在庫を減らす
+        # 在庫を減らす
         conn.execute('''
             UPDATE items SET stock = stock - ?
             WHERE id = ?
@@ -70,14 +80,14 @@ def add_usage():
         conn.commit()
         conn.close()
 
-        # フィードバック表示
         flash('✅ 使用情報を追加しました。')
         return redirect(url_for('stock'))
 
-    # GET時：選択肢のために全商品取得
+    # GET時：商品一覧を表示
     items = conn.execute('SELECT * FROM items').fetchall()
     conn.close()
     return render_template('add_usage.html', items=items)
+
 
 
 @app.route('/add_purchase', methods=['GET', 'POST'])
