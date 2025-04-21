@@ -26,6 +26,7 @@ def login_required(f):
     return wrapped
 
 @app.route('/add', methods=['GET', 'POST'])
+@login_required
 def add_item():
     if request.method == 'POST':
         name = request.form['name']
