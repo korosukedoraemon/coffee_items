@@ -4,7 +4,7 @@ import psycopg2
 import os
 from werkzeug.security import check_password_hash
 from dotenv import load_dotenv
-
+from psycopg2.extras import RealDictCursor
 
 load_dotenv()  # ← .env ファイルを読み込む
 
@@ -253,13 +253,12 @@ def logout():
     session.pop('user_id', None)
     return redirect(url_for('login'))
 
-from psycopg2.extras import RealDictCursor
-
 @app.route('/dashboard')
 @login_required
 def dashboard():
     conn = get_db_connection()
-    cur = conn.cursor(cursor_factory=RealDictCursor)  # ← RealDictCursorにすると['カラム名']で取得可
+    cur = conn.cursor(cursor_factory=RealDictCursor)  # ← これが大事
+
     current_month = datetime.now().strftime('%Y-%m')
 
     # 今月の使用量を合計
@@ -268,9 +267,9 @@ def dashboard():
         FROM usages
         WHERE usage_date LIKE %s
     '''
-    cur.execute(usage_query, (f'{current_month}%',))
+    cur.execute(usage_query, (f'{current_month}%',))  # ← ここも cur.execute に変更
     usage_result = cur.fetchone()
-    total_usage = usage_result['total_usage'] or 0  # RealDictCursorならカラム名で取得
+    total_usage = usage_result['total_usage'] or 0  # ← dict形式でアクセスするには RealDictCursor が必要
 
     # 在庫切れ間近のアイテム
     cur.execute('SELECT * FROM items WHERE stock <= min_stock')
