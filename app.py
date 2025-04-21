@@ -259,7 +259,7 @@ from psycopg2.extras import RealDictCursor
 @login_required
 def dashboard():
     conn = get_db_connection()
-    cur = conn.cursor(cursor_factory=RealDictCursor)
+    cur = conn.cursor(cursor_factory=RealDictCursor)  # ← RealDictCursorにすると['カラム名']で取得可
     current_month = datetime.now().strftime('%Y-%m')
 
     # 今月の使用量を合計
@@ -270,11 +270,11 @@ def dashboard():
     '''
     cur.execute(usage_query, (f'{current_month}%',))
     usage_result = cur.fetchone()
-    total_usage = usage_result['total_usage'] or 0  # dict形式で取得！
+    total_usage = usage_result['total_usage'] or 0  # RealDictCursorならカラム名で取得
 
-    # 在庫切れ間近（min_stock以下）の商品
+    # 在庫切れ間近のアイテム
     cur.execute('SELECT * FROM items WHERE stock <= min_stock')
-    low_stock_items = cur.fetchall()  # これも list of dict になる！
+    low_stock_items = cur.fetchall()
 
     cur.close()
     conn.close()
@@ -282,7 +282,6 @@ def dashboard():
     return render_template('dashboard.html',
                            total_usage=total_usage,
                            low_stock_items=low_stock_items)
-
 
 @app.route('/summary')
 @login_required
